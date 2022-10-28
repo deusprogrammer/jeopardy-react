@@ -8,6 +8,12 @@ import CategoryColumn from '../components/CategoryColumn';
 
 import axios from 'axios';
 
+const getMultipleRandom = (arr, num) => {
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  
+    return shuffled.slice(0, num);
+}
+
 const Jeopardy = () => {
     const [categories, setCategories] = useState([]);
     const [{card, category, cost}, setShowCard] = useAtom(ShowCardAtom);
@@ -22,10 +28,11 @@ const Jeopardy = () => {
             }
         });
 
-        let selectedCategories = [];
-        if (categories.length === 6) {
-            selectedCategories = categories;
+        if (categories.length < 6) {
+            throw new Error("Not enough categories found!");
         }
+        
+        let selectedCategories = getMultipleRandom(categories, 6);
 
         let categoryMaps = [];
         for (let category of selectedCategories.map(selectedCategory => selectedCategory.categoryString)) {
