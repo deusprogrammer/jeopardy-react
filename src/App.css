@@ -2,6 +2,10 @@ body * {
   box-sizing: border-box;
 }
 
+body *::selection { 
+  background: transparent; 
+}
+
 #home-div {
   display: flex;
   flex-direction: column;
