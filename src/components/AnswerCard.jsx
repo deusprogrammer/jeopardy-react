@@ -1,9 +1,12 @@
 import { useAtom } from 'jotai';
 import React, {useState} from 'react';
+import HiddenCardsAtom from '../atoms/HiddenCards.atom';
 import ShowCardAtom, { EMPTY_CARD_DATA } from '../atoms/ShowCard.atom';
 
 export default ({card, category, cost, fullscreen}) => {
     const [, setShowCard] = useAtom(ShowCardAtom);
+    const [hiddenCards, setHiddenCards] = useAtom(HiddenCardsAtom);
+    const [showAnswer, setShowAnswer] = useState(false);
 
     if (!card && fullscreen) {
         return (
@@ -37,13 +40,32 @@ export default ({card, category, cost, fullscreen}) => {
         <>
             <div>{category.name} - ${cost}</div>
             {mode === "host" ? null : mediaContent}
-            <div>{mode === "host" ? question : answer}</div>
+            <div>{mode === "host" || showAnswer ? `Q: ${question}` : `A: ${answer}`}</div>
         </>
     );
 
+    if (hiddenCards.includes(`${category.name}${cost}`)) {
+        return (
+            <div className="answer-card complete">
+                ${cost}
+            </div>
+        )
+    }
+
     if (fullscreen) {
         return (
-            <div className="answer-card fullscreen" onClick={() => {setShowCard(EMPTY_CARD_DATA)}}>
+            <div className="answer-card fullscreen" onClick={
+                () => {
+                    if (!showAnswer) {
+                        setShowAnswer(true);
+                    } else {
+                        let hiddenCardsCopy = [...hiddenCards];
+                        hiddenCardsCopy.push(`${category.name}${cost}`);
+                        setHiddenCards(hiddenCardsCopy);
+                        setShowAnswer(false);
+                        setShowCard(EMPTY_CARD_DATA);
+                    }
+                }}>
                 {content}
             </div>
         )

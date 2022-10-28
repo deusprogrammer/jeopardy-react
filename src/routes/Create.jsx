@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router';
 import axios from 'axios';
 
 const EMPTY_CARD = {
+    difficulty: 1,
     category: "Misc"
 }
 
@@ -13,8 +13,6 @@ export default () => {
     const [file, setFile] = useState({});
     const [loggedInUserProfile, setLoggedInUserProfile] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
-
-    const navigate = useNavigate();
 
     useEffect(() => {
         getUserProfile();
@@ -34,7 +32,6 @@ export default () => {
     }
 
     const getUserProfile = async () => {
-        // If no access token is present, don't retrieve their information
         if (!localStorage.getItem("accessToken")) {
             return;
         }
@@ -177,7 +174,13 @@ export default () => {
                 <label htmlFor='question-field'>Question</label>
                 <input id='question-field' type="text" onChange={({target: {value}}) => {setField('question', value)}} value={card.question} />
                 <label htmlFor='difficulty-field'>Difficulty</label>
-                <input id='difficulty-field' type="number" onChange={({target: {value}}) => {setField('difficulty', value)}} value={card.difficulty} />
+                <select id='difficulty-field' onChange={({target: {value}}) => {setField('difficulty', value)}} value={card.difficulty}>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                </select>
                 <label htmlFor='category-field'>Category</label>
                 <select id='category-field' type="text" onChange={({target: {value}}) => {setField('category', value)}} value={card.category}>
                     <option>Misc</option>
