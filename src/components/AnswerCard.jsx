@@ -1,12 +1,24 @@
 import { useAtom } from 'jotai';
+import cloneDeep from 'lodash/cloneDeep';
 import React, {useState} from 'react';
 import HiddenCardsAtom from '../atoms/HiddenCards.atom';
+import SessionAtom from '../atoms/Session.atom';
 import ShowCardAtom, { EMPTY_CARD_DATA } from '../atoms/ShowCard.atom';
 
-export default ({card, category, cost, fullscreen}) => {
-    const [, setShowCard] = useAtom(ShowCardAtom);
-    const [hiddenCards, setHiddenCards] = useAtom(HiddenCardsAtom);
+export default ({card, category, cost, fullscreen, cardIndex, categoryIndex}) => {
     const [showAnswer, setShowAnswer] = useState(false);
+    const [, setShowCard] = useAtom(ShowCardAtom);
+    const [session, setSession] = useAtom(SessionAtom);
+
+    const awardPoints = (playerName, cost) => {
+        let sessionCopy = cloneDeep(session);
+        sessionCopy.players[playerName].score += cost;
+        sessionCopy.rounds[sessionCopy.currentRound].categories[categoryIndex].cards[cardIndex].complete = true;
+        console.table(sessionCopy);
+        setSession(sessionCopy);
+        setShowCard(EMPTY_CARD_DATA);
+        setShowAnswer(false);
+    }
 
     if (!card && fullscreen) {
         return (
@@ -16,8 +28,6 @@ export default ({card, category, cost, fullscreen}) => {
     }
 
     const {answer, question, mediaUrl, type} = card;
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get("mode");
 
     let content;
     let mediaContent;
@@ -39,15 +49,23 @@ export default ({card, category, cost, fullscreen}) => {
     content = (
         <>
             <div>{category.name} - ${cost}</div>
-            {mode === "host" ? null : mediaContent}
-            <div>{mode === "host" || showAnswer ? `Q: ${question}` : `A: ${answer}`}</div>
+            {mediaContent}
+            <div>{showAnswer ? `Q: ${question}` : `A: ${answer}`}</div>
+            {showAnswer ? 
+                <div className="scoring-div">
+                    {Object.keys(session.players).map((key) => {
+                        let {name, score} = session.players[key];
+                        return <button onClick={() => {awardPoints(name, cost * (session.currentRound + 1))}}>Award Win to {name} [${score}]</button>
+                    })}
+                </div> : null
+            }
         </>
     );
 
-    if (hiddenCards.includes(`${category.name}${cost}`)) {
+    if (card.complete) {
         return (
             <div className="answer-card complete">
-                ${cost}
+                ${cost * (session.currentRound + 1)}
             </div>
         )
     }
@@ -58,12 +76,6 @@ export default ({card, category, cost, fullscreen}) => {
                 () => {
                     if (!showAnswer) {
                         setShowAnswer(true);
-                    } else {
-                        let hiddenCardsCopy = [...hiddenCards];
-                        hiddenCardsCopy.push(`${category.name}${cost}`);
-                        setHiddenCards(hiddenCardsCopy);
-                        setShowAnswer(false);
-                        setShowCard(EMPTY_CARD_DATA);
                     }
                 }}>
                 {content}
@@ -71,7 +83,7 @@ export default ({card, category, cost, fullscreen}) => {
         )
     } else {
         return (
-            <div className="answer-card" onClick={() => {setShowCard({card, cost, category})}}>
+            <div className="answer-card" onClick={() => {setShowCard({card, cost, category, categoryIndex, cardIndex})}}>
                 ${cost}
             </div>
         )
