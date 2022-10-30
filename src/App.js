@@ -12,7 +12,8 @@ const App = () => {
         <BrowserRouter>
             <Routes>
                 <Route path={`${process.env.PUBLIC_URL}/`} exact element={<Home />} />
-                <Route path={`${process.env.PUBLIC_URL}/play`} exact element={<Jeopardy />} />
+                <Route path={`${process.env.PUBLIC_URL}/host`} exact element={<Jeopardy mode="host" />} />
+                <Route path={`${process.env.PUBLIC_URL}/play/:id`} exact element={<Jeopardy mode="play" />} />
                 <Route path={`${process.env.PUBLIC_URL}/create`} exact element={<Create />} />
                 { process.env.NODE_ENV === 'development' ?
                     <Route exact path={`${process.env.PUBLIC_URL}/dev`} element={<Dev />} /> : null
